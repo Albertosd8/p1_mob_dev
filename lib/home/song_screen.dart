@@ -1,21 +1,22 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:p1_mob_dev/home/bloc_songs/songs_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 
 class SongScreen extends StatefulWidget {
-  SongScreen({Key? key}) : super(key: key);
+  final Map<dynamic, dynamic> songDetail;
+  SongScreen({Key? key, required this.songDetail}) : super(key: key);
 
   @override
   State<SongScreen> createState()=> _SongScreenState();
 }
 
 class _SongScreenState extends State<SongScreen> {
-  String title_album = "Feel something";
-  String title_song = "Infinity";
-  String title_author = "Jaymes Young";
-  String title_song_date = "2017-06-23";
+  // String title_album = "Feel something";
+  // String title_song = "Infinity";
+  // String title_song_date = "2017-06-23";
   // @override
   // void initState(){
   //   super.initState();
@@ -32,7 +33,14 @@ class _SongScreenState extends State<SongScreen> {
             padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
             child: IconButton(
               icon: Icon(Icons.favorite), 
-              onPressed: (() {})
+              onPressed: (() {
+                BlocProvider.of<FavsSongsBloc>(context).add(AddToSongsFavs(newFavSong: {
+                  'image': widget.songDetail['spotify'] != null ? widget.songDetail['spotify']['album']['images'][1]['url'] 
+                      : "https://akamai.sscdn.co/uploadfile/letras/albuns/1/6/a/6/608811511359601.jpg",
+                  'song_name': widget.songDetail['title'],
+                  'author': widget.songDetail['artist']
+                }));
+              })
             ),
           )
         ],
@@ -50,7 +58,8 @@ class _SongScreenState extends State<SongScreen> {
                 decoration: BoxDecoration(
                   image: DecorationImage(
                   fit: BoxFit.fill,
-                  image: NetworkImage("https://akamai.sscdn.co/uploadfile/letras/albuns/1/6/a/6/608811511359601.jpg"),
+                  image: NetworkImage(widget.songDetail['spotify'] != null ? widget.songDetail['spotify']['album']['images'][1]['url'] 
+                      : "https://akamai.sscdn.co/uploadfile/letras/albuns/1/6/a/6/608811511359601.jpg") ,
                 ),
                 )
               ),
@@ -66,16 +75,16 @@ class _SongScreenState extends State<SongScreen> {
                 Column(
                   children: [
                     Text(
-                      title_song, style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                      widget.songDetail['title'], style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      title_album, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      widget.songDetail['album'], style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      title_author, style: TextStyle(fontSize: 15, color: Colors.grey),
+                      widget.songDetail['artist'], style: TextStyle(fontSize: 15, color: Colors.grey),
                     ),
                     Text(
-                      title_song_date, style: TextStyle(fontSize: 15, color: Colors.grey),
+                      widget.songDetail['release_date'], style: TextStyle(fontSize: 15, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -91,23 +100,46 @@ class _SongScreenState extends State<SongScreen> {
                     IconButton(
                       icon: FaIcon(FontAwesomeIcons.spotify),
                       iconSize: 50,
-                      onPressed: (){
-                        Navigator.of(context).pushNamed("/songScreen");
-                      }, 
+                      onPressed: () async {
+                        if (widget.songDetail["spotify"] == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Apple music link unavailable"),
+                            ),
+                          );
+                        } else {
+                          var _url = Uri.parse(widget.songDetail["spotify"]
+                              ["external_urls"]["spotify"]);
+                          if (!await launchUrl(_url)) {
+                            throw 'Could not launch $_url';
+                          }
+                        }
+                      },
                     ),
                     IconButton(
                       icon: FaIcon(FontAwesomeIcons.podcast),
                       iconSize: 50,
-                      onPressed: (){
-                        Navigator.of(context).pushNamed("/songScreen");
-                      }, 
+                      onPressed: () {
+                      },
                     ),
                     IconButton(
                       icon: FaIcon(FontAwesomeIcons.apple),
                       iconSize: 50,
-                      onPressed: (){
-                        Navigator.of(context).pushNamed("/songScreen");
-                      }, 
+                      onPressed: () async {
+                        if (widget.songDetail["apple_music"] == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Apple music link unavailable"),
+                            ),
+                          );
+                        } else {
+                          var _url = Uri.parse(widget.songDetail["apple_music"]
+                              ["external_urls"]["spotify"]);
+                          if (!await launchUrl(_url)) {
+                            throw 'Could not launch $_url';
+                          }
+                        }
+                      },
                     ),
                   ],
                 )

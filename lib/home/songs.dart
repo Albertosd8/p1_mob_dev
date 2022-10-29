@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 
+import 'bloc_songs/songs_bloc.dart';
+
 class Songs extends StatefulWidget {
   Songs({Key? key}) : super(key: key);
 
@@ -9,7 +11,6 @@ class Songs extends StatefulWidget {
 }
 
 class _SongsState extends State<Songs> {
-
   @override
   Widget build(BuildContext context){
     return Scaffold(
@@ -19,15 +20,19 @@ class _SongsState extends State<Songs> {
         children: [
           Expanded(
             child: 
-              ListView(
-                children: <CustomSongCardsLists>[
-                    CustomSongCardsLists(
-                      image: "https://akamai.sscdn.co/uploadfile/letras/albuns/1/6/a/6/608811511359601.jpg",
-                      song_name: "Infinity",
-                      author: "Jaymes Young",
+                    ListView.separated(
+                      itemCount: FavsSongsBloc.songs_list.length,
+                      separatorBuilder: (BuildContext context, int index){
+                        return Spacer();},
+                      itemBuilder: (BuildContext context, int index){
+                        return CustomSongCardsLists(
+                          image: FavsSongsBloc.songs_list[index]['image']!, 
+                          song_name:  FavsSongsBloc.songs_list[index]['song_name']!, 
+                          author:  FavsSongsBloc.songs_list[index]['author']!);
+                      },
                     )
-                ],
-              )
+                
+              
           ),
         ],
       )
@@ -93,7 +98,11 @@ class CustomSongCardsLists extends StatelessWidget{
                 IconButton(
                   icon: Icon(Icons.favorite), 
                   onPressed: (() {
-                    Navigator.of(context).pushNamed("/songScreen");
+                    BlocProvider.of<FavsSongsBloc>(context).add(RemoveFromSongsFavs(songToRemove: {
+                      'image': image,
+                      'song_name': song_name,
+                      'author': author
+                }));
                   })
                 ),
               ],
